@@ -1,0 +1,21 @@
+{
+    "id": "com.mattermost.rssfeed-plugin",
+    "name": "RSSFeed Plugin",
+    "description": "This plugin serves as an rss parsering Mattermost plugin.",
+    "version": "0.0.1",
+    "server": {
+        "executables": {
+            "linux-amd64": "server/dist/plugin-rssfeed-linux-amd64",
+            "darwin-amd64": "server/dist/plugin-rssfeed-darwin-amd64",
+            "windows-amd64": "server/dist/plugin-rssfeed-windows-amd64.exe"
+        }
+    },
+    "webapp": {
+        "bundle_path": "webapp/dist/main.js"
+    },
+    "settings_schema": {
+        "header": "",
+        "footer": "",
+        "settings": []
+    }
+}
