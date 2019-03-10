@@ -1,6 +1,6 @@
 # RSSFeed Plugin ![CircleCI branch](https://img.shields.io/circleci/project/github/mattermost/mattermost-plugin-sample/master.svg)
 
-This plugin allows a user to subscribe a channel to an RSS Feed.
+This plugin allows a user to subscribe a channel to an RSS (Version 2 only) Feed.
 
 ## Getting Started
 Upload tar.gz to Mattermost using the plugin screen.
