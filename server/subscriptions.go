@@ -84,8 +84,7 @@ func (p *RSSFeedPlugin) storeSubscriptions(s *Subscriptions) error {
 		p.API.LogError(err.Error())
 		return err
 	}
-	p.API.LogInfo(fmt.Sprintf("Storing subscription key = %s\n", SUBSCRIPTIONS_KEY))
-	p.API.LogInfo(fmt.Sprintf("Storing subscription value = %s\n", b))
+
 	p.API.KVSet(SUBSCRIPTIONS_KEY, b)
 	return nil
 }
