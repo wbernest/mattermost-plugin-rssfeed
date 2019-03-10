@@ -5,6 +5,7 @@ import (
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"strconv"
 	//"net/http"
 	"sync"
 	"time"
@@ -68,7 +69,7 @@ func (p *RSSFeedPlugin) setupHeartBeat() {
 	if err != nil {
 		p.API.LogError(err.Error())
 	}
-	p.API.LogInfo("Heartbeat time = " + heartbeatTime.String())
+	p.API.LogInfo("Heartbeat time = " + string(heartbeatTime))
 	for true {
 		p.API.LogInfo("Heartbeat")
 
@@ -77,7 +78,7 @@ func (p *RSSFeedPlugin) setupHeartBeat() {
 			p.API.LogError(err.Error())
 
 		}
-		time.Sleep(time.Minute)
+		time.Sleep(15 * time.Minute)
 	}
 }
 
@@ -95,15 +96,20 @@ func (p *RSSFeedPlugin) processHeartBeat() error {
 	return nil
 }
 
-func (p *RSSFeedPlugin) getHeartbeatTime() (time.Duration, error) {
+func (p *RSSFeedPlugin) getHeartbeatTime() (int, error) {
 	config := p.getConfiguration()
-	heartbeatTime := "15"
+	heartbeatTime := 15
+	var err error
 	if len(config.Heartbeat) > 0 {
-		heartbeatTime = config.Heartbeat
+		heartbeatTime, err = strconv.Atoi(config.Heartbeat)
+		if err != nil {
+			mlog.Error(err.Error())
+			return 15, err
+		}
+
 	}
 
-	timeString := heartbeatTime + "m"
-	return time.ParseDuration(timeString)
+	return heartbeatTime, nil
 }
 
 func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
@@ -111,8 +117,8 @@ func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
 		return nil
 	}
 
-	p.API.LogInfo("Process subscription. url = " + subscription.URL)
-	p.API.LogInfo("Process subscription. xml = " + subscription.XML)
+	//p.API.LogInfo("Process subscription. url = " + subscription.URL)
+	//p.API.LogInfo("Process subscription. xml = " + subscription.XML)
 
 	// retrieve old xml feed from database
 	if len(subscription.XML) > 0 {

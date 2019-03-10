@@ -2,12 +2,11 @@ package main
 
 import (
 	"encoding/xml"
-	"fmt"
+	//"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"github.com/mattermost/mattermost-server/mlog"
+	//"github.com/mattermost/mattermost-server/mlog"
 )
 
 type Rss struct {
@@ -52,7 +51,7 @@ func RssParseURL(url string) (*Rss, string, error) {
 	//	mlog.Info(fmt.Sprintf("RSS URL Parser xml = %v", string(byteValue)))
 
 	xml.Unmarshal(byteValue, &rss)
-	mlog.Info(fmt.Sprintf("RSS URL Parser rss = %v", rss.Title))
+	//mlog.Info(fmt.Sprintf("RSS URL Parser rss = %v", rss.Title))
 
 	return &rss, string(byteValue), nil
 }
