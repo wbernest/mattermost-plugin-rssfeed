@@ -1,9 +1,9 @@
 package main
 
 var manifest = struct {
-	ID      string // the id
-	Version string // the version
+	Id      string
+	Version string
 }{
-	ID:      "com.mattermost.rssfeed-plugin",
+	Id:      "rssfeed",
 	Version: "0.0.1",
 }

@@ -1,23 +1,17 @@
 package main
 
 import (
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-
+	"github.com/lunny/html2md"
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
-
-	"github.com/mmcdole/gofeed"
+	//"net/http"
+	"sync"
+	"time"
 )
 
-const (
-	API_ERROR_ID_NOT_CONNECTED = "not_connected"
-	RSSFEED_ICON_URL           = "https://en.wikipedia.org/wiki/RSS#/media/File:Feed-icon.svg"
-	RSSFEED_USERNAME           = "RSSFeed Plugin"
-)
+const RSSFEED_ICON_URL = "https://en.wikipedia.org/wiki/RSS#/media/File:Feed-icon.svg"
+const RSSFEED_USERNAME = "RSSFeed Plugin"
 
 // RSSFeedPlugin Object
 type RSSFeedPlugin struct {
@@ -31,22 +25,60 @@ type RSSFeedPlugin struct {
 	configuration *configuration
 }
 
+// ServeHTTP hook from mattermost plugin
+/*
+func (p *RSSFeedPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch path := r.URL.Path; path {
+	case "/initiate":
+		go p.setupHeartBeat()
+
+		html := `
+		<!DOCTYPE html>
+		<html>
+			<head>
+				<script>
+					window.close();
+				</script>
+			</head>
+			<body>
+				<p>Completed initializing to RSSFeed. Please close this window.</p>
+			</body>
+		</html>
+		`
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+
+	default:
+		http.NotFound(w, r)
+	}
+}*/
+
 // OnActivate is a plugin hook from the Mattermost plugin API
 func (p *RSSFeedPlugin) OnActivate() error {
-
 	p.API.RegisterCommand(getCommand())
-	p.setupHeartBeat()
+	go p.setupHeartBeat()
 	return nil
 }
 
-func (p *RSSFeedPlugin) setupHeartBeat() error {
-	heartbeatTime := p.getHeartbeatTime()
-
-	for true {
-		time.Sleep(heartbeatTime * time.Minute)
-		p.processHeartBeat()
+func (p *RSSFeedPlugin) setupHeartBeat() {
+	heartbeatTime, err := p.getHeartbeatTime()
+	if err != nil {
+		p.API.LogError(err.Error())
 	}
-	return nil
+	p.API.LogInfo("Heartbeat time = " + heartbeatTime.String())
+	for true {
+		p.API.LogInfo("Heartbeat")
+
+		err := p.processHeartBeat()
+		if err != nil {
+			p.API.LogError(err.Error())
+
+		}
+		time.Sleep(time.Minute)
+	}
 }
 
 func (p *RSSFeedPlugin) processHeartBeat() error {
@@ -63,56 +95,91 @@ func (p *RSSFeedPlugin) processHeartBeat() error {
 	return nil
 }
 
-func (p *RSSFeedPlugin) getHeartbeatTime() time.Duration {
+func (p *RSSFeedPlugin) getHeartbeatTime() (time.Duration, error) {
 	config := p.getConfiguration()
-	heartbeatTime := 15
+	heartbeatTime := "15"
 	if len(config.Heartbeat) > 0 {
-		time, err := strconv.Atoi(config.Heartbeat)
-		if err == nil {
-			heartbeatTime = time
-		}
+		heartbeatTime = config.Heartbeat
 	}
 
-	return time.Duration(heartbeatTime)
+	timeString := heartbeatTime + "m"
+	return time.ParseDuration(timeString)
 }
 
 func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
-	fp := gofeed.Parser{}
+	if len(subscription.URL) == 0 {
+		return nil
+	}
+
+	p.API.LogInfo("Process subscription. url = " + subscription.URL)
+	p.API.LogInfo("Process subscription. xml = " + subscription.XML)
 
 	// retrieve old xml feed from database
-	oldRssFeed, err := fp.Parse(strings.NewReader(subscription.XML))
-	if err != nil {
-		return err
-	}
+	if len(subscription.XML) > 0 {
+		oldRssFeed, err := RssParseString(subscription.XML)
+		if err != nil {
+			p.API.LogError("Go Feed failed to parse old subscription.")
+			p.API.LogError(err.Error())
 
-	// pull null xml feed from url
-	newRssFeed, err1 := fp.ParseURL(subscription.URL)
-	if err1 != nil {
-		return err1
-	}
+			return err
+		}
+		//p.API.LogInfo(fmt.Sprintf("%v", oldRssFeed))
 
-	// check each item in new feed to see if they exist in old feed
-	// if they do not exist post the new item to the channel and update
-	// xml in the subscription object
-	postsMade := false
-	for _, item := range newRssFeed.Items {
-		exists := false
-		for _, oldItem := range oldRssFeed.Items {
-			if oldItem.GUID == item.GUID {
-				exists = true
+		newRssFeed, newRssFeedString, err := RssParseURL(subscription.URL)
+		if err != nil {
+			p.API.LogError(err.Error())
+			return err
+		}
+
+		// check each item in new feed to see if they exist in old feed
+		// if they do not exist post the new item to the channel and update
+		// xml in the subscription object
+
+		postsMade := false
+		for _, item := range newRssFeed.ItemList {
+			exists := false
+			for _, oldItem := range oldRssFeed.ItemList {
+				if oldItem.Guid == item.Guid {
+					exists = true
+				}
+			}
+
+			// if the item does not exist post it to the correct channel
+			if !exists {
+				postsMade = true
+				post := item.Title + "\n" + item.Link + "\n" + html2md.Convert(item.Description) + "\n"
+				p.createBotPost(subscription.ChannelID, post, model.POST_DEFAULT)
 			}
 		}
 
-		// if the item does not exist post it to the correct channel
-		if !exists {
-			postsMade = true
+		if postsMade {
+			subscription.XML = newRssFeedString
+			p.updateSubscription(subscription)
 		}
-	}
 
-	if postsMade {
-		subscription.XML = newRssFeed.String()
+	} else {
+		//p.API.LogInfo("Gettings RSS for url = " + subscription.URL)
+
+		newRssFeed, newRssFeedXML, err := RssParseURL(subscription.URL)
+		if err != nil {
+			p.API.LogError("Go Feed failed to parse new subscription.")
+			p.API.LogError(err.Error())
+
+			return err
+		}
+
+		//p.API.LogInfo(fmt.Sprintf("New RSS Feed Title %s\n Description %s\n", newRssFeed.Title, newRssFeed.Description))
+		//.API.LogInfo(fmt.Sprintf("New RSS Feed Items %v", newRssFeed.ItemList))
+
+		for _, item := range newRssFeed.ItemList {
+			post := item.Title + "\n" + item.Link + "\n" + html2md.Convert(item.Description) + "\n"
+			p.createBotPost(subscription.ChannelID, post, model.POST_DEFAULT)
+		}
+
+		subscription.XML = newRssFeedXML
 		p.updateSubscription(subscription)
 	}
+
 	return nil
 }
 

@@ -30,8 +30,8 @@ func (p *RSSFeedPlugin) subscribe(ctx context.Context, channelID string, url str
 	}
 
 	key := getKey(channelID, url)
-
 	if err := p.addSubscription(key, sub); err != nil {
+		p.API.LogError(err.Error())
 		return err
 	}
 
@@ -41,15 +41,17 @@ func (p *RSSFeedPlugin) subscribe(ctx context.Context, channelID string, url str
 func (p *RSSFeedPlugin) addSubscription(key string, sub *Subscription) error {
 	currentSubscriptions, err := p.getSubscriptions()
 	if err != nil {
+		p.API.LogError(err.Error())
 		return err
 	}
 
 	// check if url already exists
 	_, ok := currentSubscriptions.Subscriptions[key]
-	if ok {
+	if !ok {
 		currentSubscriptions.Subscriptions[key] = &Subscription{ChannelID: sub.ChannelID, URL: sub.URL}
 		err = p.storeSubscriptions(currentSubscriptions)
 		if err != nil {
+			p.API.LogError(err.Error())
 			return err
 		}
 
@@ -63,6 +65,7 @@ func (p *RSSFeedPlugin) getSubscriptions() (*Subscriptions, error) {
 
 	value, err := p.API.KVGet(SUBSCRIPTIONS_KEY)
 	if err != nil {
+		p.API.LogError(err.Error())
 		return nil, err
 	}
 
@@ -78,8 +81,11 @@ func (p *RSSFeedPlugin) getSubscriptions() (*Subscriptions, error) {
 func (p *RSSFeedPlugin) storeSubscriptions(s *Subscriptions) error {
 	b, err := json.Marshal(s)
 	if err != nil {
+		p.API.LogError(err.Error())
 		return err
 	}
+	p.API.LogInfo(fmt.Sprintf("Storing subscription key = %s\n", SUBSCRIPTIONS_KEY))
+	p.API.LogInfo(fmt.Sprintf("Storing subscription value = %s\n", b))
 	p.API.KVSet(SUBSCRIPTIONS_KEY, b)
 	return nil
 }
@@ -88,6 +94,7 @@ func (p *RSSFeedPlugin) unsubscribe(channelID string, url string) error {
 
 	currentSubscriptions, err := p.getSubscriptions()
 	if err != nil {
+		p.API.LogError(err.Error())
 		return err
 	}
 
@@ -96,6 +103,7 @@ func (p *RSSFeedPlugin) unsubscribe(channelID string, url string) error {
 	if ok {
 		delete(currentSubscriptions.Subscriptions, key)
 		if err := p.storeSubscriptions(currentSubscriptions); err != nil {
+			p.API.LogError(err.Error())
 			return err
 		}
 	}
@@ -106,6 +114,7 @@ func (p *RSSFeedPlugin) unsubscribe(channelID string, url string) error {
 func (p *RSSFeedPlugin) updateSubscription(subscription *Subscription) error {
 	currentSubscriptions, err := p.getSubscriptions()
 	if err != nil {
+		p.API.LogError(err.Error())
 		return err
 	}
 
@@ -114,6 +123,7 @@ func (p *RSSFeedPlugin) updateSubscription(subscription *Subscription) error {
 	if ok {
 		currentSubscriptions.Subscriptions[key] = subscription
 		if err := p.storeSubscriptions(currentSubscriptions); err != nil {
+			p.API.LogError(err.Error())
 			return err
 		}
 	}

@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/plugin"
+	//"net/http"
+	"strings"
 
 	"github.com/mattermost/mattermost-server/model"
 )
@@ -14,7 +14,9 @@ import (
 // COMMAND_HELP is the text you see when you type /feed help
 const COMMAND_HELP = `* |/feed subscribe url| - Connect your Mattermost channel to an rss feed 
 * |/feed list| - Lists the rss feeds you have subscribed to
-* |/feed unsubscribe <name> - Unsubscribes the Mattermost channel from the named rss feed`
+* |/feed unsubscribe url| - Unsubscribes the Mattermost channel from the rss feed`
+
+// + `* |/feed initiate| - initiates the rss feed subscription poller`
 
 func getCommand() *model.Command {
 	return &model.Command{
@@ -57,6 +59,13 @@ func (p *RSSFeedPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArg
 	//ctx := context.Background()
 
 	switch action {
+	/*case "initiate":
+	//p.API.LogInfo(args.SiteURL + "/plugin/rssfeed/initiate")
+	_, err := http.Get("https://mattermost.gridprotectionalliance.org/plugins/rssfeed/initiate")
+	if err != nil {
+		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Failed to Initiate subscription poller."), nil
+	}
+	return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Initiated subscription poller."), nil*/
 	case "list":
 		txt := "### Subscriptions in this channel\n"
 		subscriptions, err := p.getSubscriptions()
@@ -65,7 +74,9 @@ func (p *RSSFeedPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArg
 		}
 
 		for _, value := range subscriptions.Subscriptions {
-			txt += fmt.Sprintf("* `%s` - %s\n", value.ChannelID, value.URL)
+			if value.ChannelID == args.ChannelId {
+				txt += fmt.Sprintf("* `%s`\n", value.URL)
+			}
 		}
 		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, txt), nil
 	case "subscribe":
