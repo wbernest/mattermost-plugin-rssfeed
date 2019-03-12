@@ -22,7 +22,7 @@ git clone https://github.com/wbernest/mattermost-plugin-rssfeed
 
 Build your plugin:
 ```
-make
+make dist
 ```
 
 This will produce a single plugin file (with support for multiple architectures) for upload to your Mattermost server:
