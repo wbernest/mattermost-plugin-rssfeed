@@ -70,9 +70,11 @@ endif
 server: server/.depensure
 ifneq ($(HAS_SERVER),)
 	mkdir -p server/dist;
+	mkdir -p server/dist/images;
 	cd server && env GOOS=linux GOARCH=amd64 $(GO) build -o dist/plugin-linux-amd64;
 	cd server && env GOOS=darwin GOARCH=amd64 $(GO) build -o dist/plugin-darwin-amd64;
 	cd server && env GOOS=windows GOARCH=amd64 $(GO) build -o dist/plugin-windows-amd64.exe;
+	cp images/rss.png server/dist/images/rss.png
 endif
 
 ## Ensures NPM dependencies are installed without having to run this all the time.
