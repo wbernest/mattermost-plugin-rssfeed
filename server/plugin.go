@@ -5,13 +5,14 @@ import (
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"io/ioutil"
+	"net/http"
 	"strconv"
-	//"net/http"
 	"sync"
 	"time"
 )
 
-const RSSFEED_ICON_URL = "https://en.wikipedia.org/wiki/RSS#/media/File:Feed-icon.svg"
+const RSSFEED_ICON_URL = "https://mattermost.gridprotectionalliance.org/plugins/rssfeed/images/rss.png"
 const RSSFEED_USERNAME = "RSSFeed Plugin"
 
 // RSSFeedPlugin Object
@@ -27,35 +28,23 @@ type RSSFeedPlugin struct {
 }
 
 // ServeHTTP hook from mattermost plugin
-/*
 func (p *RSSFeedPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	switch path := r.URL.Path; path {
-	case "/initiate":
-		go p.setupHeartBeat()
-
-		html := `
-		<!DOCTYPE html>
-		<html>
-			<head>
-				<script>
-					window.close();
-				</script>
-			</head>
-			<body>
-				<p>Completed initializing to RSSFeed. Please close this window.</p>
-			</body>
-		</html>
-		`
-
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-
+	case "/images/rss.png":
+		data, err := ioutil.ReadFile(string("plugins/rssfeed/server/dist/images/rss.png"))
+		if err == nil {
+			w.Header().Set("Content-Type", "image/png")
+			w.Write(data)
+		} else {
+			w.WriteHeader(404)
+			w.Write([]byte("404 Something went wrong - " + http.StatusText(404)))
+			p.API.LogInfo("/imags/rss.png err = ", err.Error())
+		}
 	default:
+		w.Header().Set("Content-Type", "application/json")
 		http.NotFound(w, r)
 	}
-}*/
+}
 
 // OnActivate is a plugin hook from the Mattermost plugin API
 func (p *RSSFeedPlugin) OnActivate() error {
@@ -202,9 +191,9 @@ func (p *RSSFeedPlugin) createBotPost(channelID string, message string, postType
 		Message:   message,
 		Type:      postType,
 		Props: map[string]interface{}{
-			"from_webhook":      "true",
 			"override_username": RSSFEED_USERNAME,
 			"override_icon_url": RSSFEED_ICON_URL,
+			"from_webhook":      true,
 		},
 	}
 
