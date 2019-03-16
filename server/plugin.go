@@ -58,16 +58,16 @@ func (p *RSSFeedPlugin) setupHeartBeat() {
 	if err != nil {
 		p.API.LogError(err.Error())
 	}
-	p.API.LogInfo("Heartbeat time = " + string(heartbeatTime))
+	//p.API.LogDebug("Heartbeat time = " + string(heartbeatTime))
 	for true {
-		p.API.LogInfo("Heartbeat")
+		p.API.LogDebug("Heartbeat")
 
 		err := p.processHeartBeat()
 		if err != nil {
 			p.API.LogError(err.Error())
 
 		}
-		time.Sleep(15 * time.Minute)
+		time.Sleep(time.Duration(heartbeatTime) * time.Minute)
 	}
 }
 
