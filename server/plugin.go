@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"github.com/lunny/html2md"
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"github.com/wbernest/rss-v2-parser"
 )
 
 const RSSFEED_ICON_URL = "https://mattermost.gridprotectionalliance.org/plugins/rssfeed/images/rss.png"
@@ -74,12 +76,14 @@ func (p *RSSFeedPlugin) setupHeartBeat() {
 func (p *RSSFeedPlugin) processHeartBeat() error {
 	dictionaryOfSubscriptions, err := p.getSubscriptions()
 	if err != nil {
-		mlog.Error(err.Error())
-		return nil
+		return err
 	}
 
 	for _, value := range dictionaryOfSubscriptions.Subscriptions {
-		p.processSubscription(value)
+		err := p.processSubscription(value)
+		if err != nil {
+			p.API.LogError(err.Error())
+		}
 	}
 
 	return nil
@@ -92,10 +96,8 @@ func (p *RSSFeedPlugin) getHeartbeatTime() (int, error) {
 	if len(config.Heartbeat) > 0 {
 		heartbeatTime, err = strconv.Atoi(config.Heartbeat)
 		if err != nil {
-			mlog.Error(err.Error())
 			return 15, err
 		}
-
 	}
 
 	return heartbeatTime, nil
@@ -103,75 +105,32 @@ func (p *RSSFeedPlugin) getHeartbeatTime() (int, error) {
 
 func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
 	if len(subscription.URL) == 0 {
-		return nil
+		return errors.New("no url supplied")
 	}
 
-	//p.API.LogInfo("Process subscription. url = " + subscription.URL)
-	//p.API.LogInfo("Process subscription. xml = " + subscription.XML)
+
+
+	// get new rss feed string from url
+	newRssFeed, newRssFeedString, err := rssv2parser.RssParseURL(subscription.URL)
+	if err != nil {
+		return err
+	}
 
 	// retrieve old xml feed from database
-	if len(subscription.XML) > 0 {
-		oldRssFeed, err := RssParseString(subscription.XML)
-		if err != nil {
-			p.API.LogError("Go Feed failed to parse old subscription.")
-			p.API.LogError(err.Error())
+	oldRssFeed, err := rssv2parser.RssParseString(subscription.XML)
+	if err != nil {
+		return err
+	}
 
-			return err
-		}
-		//p.API.LogInfo(fmt.Sprintf("%v", oldRssFeed))
+	items := rssv2parser.CompareItems(oldRssFeed, newRssFeed)
 
-		newRssFeed, newRssFeedString, err := RssParseURL(subscription.URL)
-		if err != nil {
-			p.API.LogError(err.Error())
-			return err
-		}
+	for _, item := range items {
+		post := item.Title + "\n" + item.Link + "\n" + html2md.Convert(item.Description) + "\n"
+		p.createBotPost(subscription.ChannelID, post, model.POST_DEFAULT)
+	}
 
-		// check each item in new feed to see if they exist in old feed
-		// if they do not exist post the new item to the channel and update
-		// xml in the subscription object
-
-		postsMade := false
-		for _, item := range newRssFeed.ItemList {
-			exists := false
-			for _, oldItem := range oldRssFeed.ItemList {
-				if oldItem.Guid == item.Guid {
-					exists = true
-				}
-			}
-
-			// if the item does not exist post it to the correct channel
-			if !exists {
-				postsMade = true
-				post := item.Title + "\n" + item.Link + "\n" + html2md.Convert(item.Description) + "\n"
-				p.createBotPost(subscription.ChannelID, post, model.POST_DEFAULT)
-			}
-		}
-
-		if postsMade {
-			subscription.XML = newRssFeedString
-			p.updateSubscription(subscription)
-		}
-
-	} else {
-		//p.API.LogInfo("Gettings RSS for url = " + subscription.URL)
-
-		newRssFeed, newRssFeedXML, err := RssParseURL(subscription.URL)
-		if err != nil {
-			p.API.LogError("Go Feed failed to parse new subscription.")
-			p.API.LogError(err.Error())
-
-			return err
-		}
-
-		//p.API.LogInfo(fmt.Sprintf("New RSS Feed Title %s\n Description %s\n", newRssFeed.Title, newRssFeed.Description))
-		//.API.LogInfo(fmt.Sprintf("New RSS Feed Items %v", newRssFeed.ItemList))
-
-		for _, item := range newRssFeed.ItemList {
-			post := item.Title + "\n" + item.Link + "\n" + html2md.Convert(item.Description) + "\n"
-			p.createBotPost(subscription.ChannelID, post, model.POST_DEFAULT)
-		}
-
-		subscription.XML = newRssFeedXML
+	if len(items) > 0 {
+		subscription.XML = newRssFeedString
 		p.updateSubscription(subscription)
 	}
 
