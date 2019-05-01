@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/mattermost/mattermost-server/mlog"
-	"github.com/mattermost/mattermost-server/plugin"
-	//"net/http"
-	"strings"
-
 	"github.com/mattermost/mattermost-server/model"
+	"github.com/mattermost/mattermost-server/plugin"
+	"strings"
 )
 
 // COMMAND_HELP is the text you see when you type /feed help
