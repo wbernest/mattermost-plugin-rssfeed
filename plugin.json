@@ -2,7 +2,7 @@
     "id": "rssfeed",
     "name": "RSSFeed",
     "description": "This plugin serves as an rss subscription service for Mattermost.",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "server": {
         "executables": {
             "linux-amd64": "server/dist/plugin-linux-amd64",
@@ -25,7 +25,14 @@
                 "display_name": "User",
                 "type": "username",
                 "help_text": "Select the username of the user that the plugin will post with. This can be any user, the name and icon will be overridden when posting."
+            },
+            {
+                "key": "ShowDescription",
+                "display_name": "Show Description in RSS post.",
+                "type": "bool",
+                "help_text": "(Optional) Use this field to hide the description in rss post (Useful if link already returns a valid link back to post)."
             }
+            
         ]
     }
 }

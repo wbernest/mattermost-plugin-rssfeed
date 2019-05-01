@@ -6,12 +6,12 @@ import (
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/wbernest/rss-v2-parser"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
-	"github.com/wbernest/rss-v2-parser"
 )
 
 const RSSFEED_ICON_URL = "https://mattermost.gridprotectionalliance.org/plugins/rssfeed/images/rss.png"
@@ -104,11 +104,11 @@ func (p *RSSFeedPlugin) getHeartbeatTime() (int, error) {
 }
 
 func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
+	config := p.getConfiguration()
+
 	if len(subscription.URL) == 0 {
 		return errors.New("no url supplied")
 	}
-
-
 
 	// get new rss feed string from url
 	newRssFeed, newRssFeedString, err := rssv2parser.RssParseURL(subscription.URL)
@@ -122,10 +122,13 @@ func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
 		return err
 	}
 
-	items := rssv2parser.CompareItems(oldRssFeed, newRssFeed)
+	items := rssv2parser.CompareItemsBetweenOldAndNew(oldRssFeed, newRssFeed)
 
 	for _, item := range items {
-		post := item.Title + "\n" + item.Link + "\n" + html2md.Convert(item.Description) + "\n"
+		post := item.Title + "\n" + item.Link + "\n"
+		if config.ShowDescription {
+			post = post + html2md.Convert(item.Description) + "\n"
+		}
 		p.createBotPost(subscription.ChannelID, post, model.POST_DEFAULT)
 	}
 
