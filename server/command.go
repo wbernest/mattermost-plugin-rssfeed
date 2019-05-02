@@ -22,7 +22,7 @@ func getCommand() *model.Command {
 		DisplayName:      "RSSFeed",
 		Description:      "Allows user to subscribe to an rss feed.",
 		AutoComplete:     true,
-		AutoCompleteDesc: "Available commands: list,subscribe, unsubscribe, help",
+		AutoCompleteDesc: "Available commands: list, subscribe, unsubscribe, help",
 		AutoCompleteHint: "[command]",
 	}
 }
@@ -54,16 +54,7 @@ func (p *RSSFeedPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArg
 		return &model.CommandResponse{}, nil
 	}
 
-	//ctx := context.Background()
-
 	switch action {
-	/*case "initiate":
-	//p.API.LogInfo(args.SiteURL + "/plugin/rssfeed/initiate")
-	_, err := http.Get("https://mattermost.gridprotectionalliance.org/plugins/rssfeed/initiate")
-	if err != nil {
-		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Failed to Initiate subscription poller."), nil
-	}
-	return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Initiated subscription poller."), nil*/
 	case "list":
 		txt := "### Subscriptions in this channel\n"
 		subscriptions, err := p.getSubscriptions()
