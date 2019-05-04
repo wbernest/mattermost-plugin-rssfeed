@@ -4,12 +4,12 @@ This plugin allows a user to subscribe a channel to an RSS (Version 2 only) Feed
 
 ## Getting Started
 Upload tar.gz to Mattermost using the plugin screen.
-Asign a user under the settings for posting.
+Assign a user under the settings for posting.
 
-To allow for the plugin to override user user name and icon on posts you must enable the feature in your mattermost system settings:
+To allow for the plugin to override user user name and icon on posts you must enable the feature in your Mattermost system settings:
 
-<a class="reference external" href="https://docs.mattermost.com/administration/config-settings.html#enable-integrations-to-override-usernames">Enable integrations to override usernames</a> must be set to <cite>true</cite> in <cite>config.json</cite> to override usernames. Enable them from <strong>System Console &gt; Integrations &gt; Custom Integrations</strong> or ask your System Administrator to do so. If not enabled, the username is set to <cite>webhook</cite>.
-<a class="reference external" href="https://docs.mattermost.com/administration/config-settings.html#enable-integrations-to-override-profile-picture-icons">Enable integrations to override profile picture icons</a> must be set to <cite>true</cite> in <cite>config.json</cite> to override profile picture icons. Enable them from <strong>System Console &gt; Integrations &gt; Custom Integrations</strong> or ask your System Administrator to do so. If not enabled, the icon of the creator of the webhook URL is used to post messages.
+* <a class="reference external" href="https://docs.mattermost.com/administration/config-settings.html#enable-integrations-to-override-usernames">Enable integrations to override usernames</a> must be set to `true` in `config.json` to override usernames. Enable them from <strong>System Console &gt; Integrations &gt; Custom Integrations</strong> or ask your System Administrator to do so. If not enabled, the username is set to `webhook`.
+* <a class="reference external" href="https://docs.mattermost.com/administration/config-settings.html#enable-integrations-to-override-profile-picture-icons">Enable integrations to override profile picture icons</a> must be set to `true` in `config.json` to override profile picture icons. Enable them from <strong>System Console &gt; Integrations &gt; Custom Integrations</strong> or ask your System Administrator to do so. If not enabled, the icon of the creator of the webhook URL is used to post messages.
 
 To use the plugin, navigate to the channel you want subscribed and use the following commands:
 ```
