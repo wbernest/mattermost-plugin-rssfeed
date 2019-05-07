@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"github.com/lunny/html2md"
-	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/wbernest/atom-parser"
 	"github.com/wbernest/rss-v2-parser"
 	"io/ioutil"
 	"net/http"
@@ -15,6 +15,9 @@ import (
 )
 
 const RSSFEED_ICON_URL = "https://mattermost.gridprotectionalliance.org/plugins/rssfeed/images/rss.png"
+
+//const RSSFEED_ICON_URL = "./plugins/rssfeed/assets/rss.png"
+
 const RSSFEED_USERNAME = "RSSFeed Plugin"
 
 // RSSFeedPlugin Object
@@ -33,7 +36,7 @@ type RSSFeedPlugin struct {
 func (p *RSSFeedPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	switch path := r.URL.Path; path {
 	case "/images/rss.png":
-		data, err := ioutil.ReadFile(string("plugins/rssfeed/server/dist/images/rss.png"))
+		data, err := ioutil.ReadFile(string("plugins/rssfeed/assets/rss.png"))
 		if err == nil {
 			w.Header().Set("Content-Type", "image/png")
 			w.Write(data)
@@ -60,9 +63,9 @@ func (p *RSSFeedPlugin) setupHeartBeat() {
 	if err != nil {
 		p.API.LogError(err.Error())
 	}
-	//p.API.LogDebug("Heartbeat time = " + string(heartbeatTime))
+
 	for true {
-		p.API.LogDebug("Heartbeat")
+		//p.API.LogDebug("Heartbeat")
 
 		err := p.processHeartBeat()
 		if err != nil {
@@ -104,20 +107,40 @@ func (p *RSSFeedPlugin) getHeartbeatTime() (int, error) {
 }
 
 func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
-	config := p.getConfiguration()
 
 	if len(subscription.URL) == 0 {
 		return errors.New("no url supplied")
 	}
 
+	if rssv2parser.IsValidFeed(subscription.URL) {
+		err := p.processRSSV2Subscription(subscription)
+		if err != nil {
+			return errors.New("invalid RSS v2 feed format - " + err.Error())
+		}
+
+	} else if atomparser.IsValidFeed(subscription.URL) {
+		err := p.processAtomSubscription(subscription)
+		if err != nil {
+			return errors.New("invalid atom feed format - " + err.Error())
+		}
+	} else {
+		return errors.New("invalid feed format")
+	}
+
+	return nil
+}
+
+func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) error {
+	config := p.getConfiguration()
+
 	// get new rss feed string from url
-	newRssFeed, newRssFeedString, err := rssv2parser.RssParseURL(subscription.URL)
+	newRssFeed, newRssFeedString, err := rssv2parser.ParseURL(subscription.URL)
 	if err != nil {
 		return err
 	}
 
 	// retrieve old xml feed from database
-	oldRssFeed, err := rssv2parser.RssParseString(subscription.XML)
+	oldRssFeed, err := rssv2parser.ParseString(subscription.XML)
 	if err != nil {
 		return err
 	}
@@ -125,11 +148,11 @@ func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
 	items := rssv2parser.CompareItemsBetweenOldAndNew(oldRssFeed, newRssFeed)
 
 	for _, item := range items {
-		post := item.Title + "\n" + item.Link + "\n"
+		post := newRssFeed.Channel.Title + "\n" + item.Title + "\n" + item.Link + "\n"
 		if config.ShowDescription {
 			post = post + html2md.Convert(item.Description) + "\n"
 		}
-		p.createBotPost(subscription.ChannelID, post, model.POST_DEFAULT)
+		p.createBotPost(subscription.ChannelID, post, "custom_git_pr")
 	}
 
 	if len(items) > 0 {
@@ -140,27 +163,61 @@ func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
 	return nil
 }
 
+func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) error {
+	// get new rss feed string from url
+	newFeed, newFeedString, err := atomparser.ParseURL(subscription.URL)
+	if err != nil {
+		return err
+	}
+
+	// retrieve old xml feed from database
+	oldFeed, err := atomparser.ParseString(subscription.XML)
+	if err != nil {
+		return err
+	}
+
+	items := atomparser.CompareItemsBetweenOldAndNew(oldFeed, newFeed)
+
+	for _, item := range items {
+		post := newFeed.Title + "\n" + item.Title + "\n"
+		if item.Content.Type != "text" {
+			post = post + html2md.Convert(item.Content.Body) + "\n"
+		} else {
+			post = post + item.Content.Body + "\n"
+		}
+		p.createBotPost(subscription.ChannelID, post, "custom_git_pr")
+	}
+
+	if len(items) > 0 {
+		subscription.XML = newFeedString
+		p.updateSubscription(subscription)
+	}
+
+	return nil
+}
+
 func (p *RSSFeedPlugin) createBotPost(channelID string, message string, postType string) error {
 	config := p.getConfiguration()
 	user, err := p.API.GetUserByUsername(config.Username)
 	if err != nil {
-		mlog.Error(err.Error())
+		p.API.LogError(err.Error())
 		return err
 	}
+
 	post := &model.Post{
 		UserId:    user.Id,
 		ChannelId: channelID,
 		Message:   message,
 		Type:      postType,
 		Props: map[string]interface{}{
+			"from_webhook":      true,
 			"override_username": RSSFEED_USERNAME,
 			"override_icon_url": RSSFEED_ICON_URL,
-			"from_webhook":      true,
 		},
 	}
 
 	if _, err := p.API.CreatePost(post); err != nil {
-		mlog.Error(err.Error())
+		p.API.LogError(err.Error())
 		return err
 	}
 

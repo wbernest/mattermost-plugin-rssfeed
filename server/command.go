@@ -39,6 +39,7 @@ func getCommandResponse(responseType, text string) *model.CommandResponse {
 
 // ExecuteCommand will execute commands ...
 func (p *RSSFeedPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+
 	split := strings.Fields(args.Command)
 	command := split[0]
 	parameters := []string{}
