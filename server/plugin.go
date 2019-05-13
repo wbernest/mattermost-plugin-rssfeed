@@ -180,6 +180,12 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 
 	for _, item := range items {
 		post := newFeed.Title + "\n" + item.Title + "\n"
+
+		for _, link := range item.Link {
+			if link.Rel == "alternate" {
+				post = link.Href + "\n"
+			}
+		}
 		if item.Content.Type != "text" {
 			post = post + html2md.Convert(item.Content.Body) + "\n"
 		} else {
@@ -210,7 +216,7 @@ func (p *RSSFeedPlugin) createBotPost(channelID string, message string, postType
 		Message:   message,
 		Type:      postType,
 		Props: map[string]interface{}{
-			"from_webhook":      true,
+			"from_webhook":      "true",
 			"override_username": RSSFEED_USERNAME,
 			"override_icon_url": RSSFEED_ICON_URL,
 		},
