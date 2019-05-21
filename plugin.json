@@ -2,7 +2,7 @@
     "id": "rssfeed",
     "name": "RSSFeed",
     "description": "This plugin serves as an rss subscription service for Mattermost.",
-    "version": "0.0.6",
+    "version": "0.1.0",
     "server": {
         "executables": {
             "linux-amd64": "server/dist/plugin-linux-amd64",
@@ -19,12 +19,6 @@
                 "display_name": "Time window between rss feed checks (minutes).",
                 "type": "text",
                 "help_text": "This is used to set a timer for the system to know when to go check to see if there is any new data in the subscribed rss feeds.  Defaults to 15 minutes."
-            },
-            {
-                "key": "Username",
-                "display_name": "User",
-                "type": "username",
-                "help_text": "Select the username of the user that the plugin will post with. This can be any user, the name and icon will be overridden when posting."
             },
             {
                 "key": "ShowDescription",

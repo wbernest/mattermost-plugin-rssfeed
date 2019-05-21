@@ -11,8 +11,8 @@ import (
 
 // COMMAND_HELP is the text you see when you type /feed help
 const COMMAND_HELP = `* |/feed subscribe url| - Connect your Mattermost channel to an rss feed 
-* |/feed list| - Lists the rss feeds you have subscribed to
-* |/feed unsubscribe url| - Unsubscribes the Mattermost channel from the rss feed`
+ * |/feed list| - Lists the rss feeds you have subscribed to
+ * |/feed unsubscribe url| - Unsubscribes the Mattermost channel from the rss feed`
 
 // + `* |/feed initiate| - initiates the rss feed subscription poller`
 
@@ -31,7 +31,7 @@ func getCommandResponse(responseType, text string) *model.CommandResponse {
 	return &model.CommandResponse{
 		ResponseType: responseType,
 		Text:         text,
-		Username:     RSSFEED_USERNAME,
+		Username:     botDisplayName,
 		IconURL:      RSSFEED_ICON_URL,
 		Type:         model.POST_DEFAULT,
 	}
