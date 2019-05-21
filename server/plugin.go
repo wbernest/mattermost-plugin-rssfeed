@@ -14,11 +14,7 @@ import (
 	"time"
 )
 
-const RSSFEED_ICON_URL = "https://mattermost.gridprotectionalliance.org/plugins/rssfeed/images/rss.png"
-
 //const RSSFEED_ICON_URL = "./plugins/rssfeed/assets/rss.png"
-
-const RSSFEED_USERNAME = "RSSFeed Plugin"
 
 // RSSFeedPlugin Object
 type RSSFeedPlugin struct {
@@ -30,6 +26,9 @@ type RSSFeedPlugin struct {
 	// configuration is the active plugin configuration. Consult getConfiguration and
 	// setConfiguration for usage.
 	configuration *configuration
+
+	botUserID            string
+	processHeartBeatFlag bool
 }
 
 // ServeHTTP hook from mattermost plugin
@@ -43,19 +42,12 @@ func (p *RSSFeedPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *h
 		} else {
 			w.WriteHeader(404)
 			w.Write([]byte("404 Something went wrong - " + http.StatusText(404)))
-			p.API.LogInfo("/imags/rss.png err = ", err.Error())
+			p.API.LogInfo("/images/rss.png err = ", err.Error())
 		}
 	default:
 		w.Header().Set("Content-Type", "application/json")
 		http.NotFound(w, r)
 	}
-}
-
-// OnActivate is a plugin hook from the Mattermost plugin API
-func (p *RSSFeedPlugin) OnActivate() error {
-	p.API.RegisterCommand(getCommand())
-	go p.setupHeartBeat()
-	return nil
 }
 
 func (p *RSSFeedPlugin) setupHeartBeat() {
@@ -64,7 +56,7 @@ func (p *RSSFeedPlugin) setupHeartBeat() {
 		p.API.LogError(err.Error())
 	}
 
-	for true {
+	for p.processHeartBeatFlag {
 		//p.API.LogDebug("Heartbeat")
 
 		err := p.processHeartBeat()
@@ -203,23 +195,15 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 }
 
 func (p *RSSFeedPlugin) createBotPost(channelID string, message string, postType string) error {
-	config := p.getConfiguration()
-	user, err := p.API.GetUserByUsername(config.Username)
-	if err != nil {
-		p.API.LogError(err.Error())
-		return err
-	}
-
 	post := &model.Post{
-		UserId:    user.Id,
+		UserId:    p.botUserID,
 		ChannelId: channelID,
 		Message:   message,
 		Type:      postType,
-		Props: map[string]interface{}{
+		/*Props: map[string]interface{}{
 			"from_webhook":      "true",
-			"override_username": RSSFEED_USERNAME,
-			"override_icon_url": RSSFEED_ICON_URL,
-		},
+			"override_username": botDisplayName,
+		},*/
 	}
 
 	if _, err := p.API.CreatePost(post); err != nil {
