@@ -1,30 +1,10 @@
 version: 2.1
-jobs:
-  lint:
-    docker:
-      - image: circleci/golang:1.12-node
 
-    working_directory: /go/src/github.com/mattermost/mattermost-plugin-sample
-    steps:
-      - checkout
-
-      - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - run: make check-style
-
-  test:
-    docker:
-      - image: circleci/golang:1.12-node
-
-    working_directory: /go/src/github.com/mattermost/mattermost-plugin-sample
-    steps:
-      - checkout
-
-      - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - run: make test
+orbs:
+  plugin-ci: mattermost/plugin-ci@0.0.5
 
 workflows:
-  version: 2
-  untagged-build:
+  ci-build:
     jobs:
-      - lint
-      - test
+      - plugin-ci/lint
+      - plugin-ci/test
