@@ -178,10 +178,17 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 				post = link.Href + "\n"
 			}
 		}
-		if item.Content.Type != "text" {
-			post = post + html2md.Convert(item.Content.Body) + "\n"
+		if item.Content != nil {
+			if item.Content.Type != "text" {
+				post = post + html2md.Convert(item.Content.Body) + "\n"
+			} else {
+				post = post + item.Content.Body + "\n"
+			}
 		} else {
-			post = post + item.Content.Body + "\n"
+			p.API.LogInfo("Missing content in atom feed item",
+				"subscription_url", subscription.URL,
+				"item_title", item.Title)
+			post = post + "\n"
 		}
 		p.createBotPost(subscription.ChannelID, post, "custom_git_pr")
 	}
