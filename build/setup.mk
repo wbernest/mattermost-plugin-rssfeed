@@ -25,6 +25,15 @@ HAS_SERVER ?= $(shell build/bin/manifest has_server)
 # Determine if a webapp is defined in the manifest.
 HAS_WEBAPP ?= $(shell build/bin/manifest has_webapp)
 
+# Determine if a /public folder is in use
+HAS_PUBLIC ?= $(wildcard public/.)
+
+# Determine if the mattermost-utilities repo is present
+HAS_MM_UTILITIES ?= $(wildcard $(MM_UTILITIES_DIR)/.)
+
+# Store the current path for later use
+PWD ?= $(shell pwd)
+
 # Ensure that npm (and thus node) is installed.
 ifneq ($(HAS_WEBAPP),)
 ifeq ($(NPM),)
