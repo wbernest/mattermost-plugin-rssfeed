@@ -175,7 +175,7 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 
 		for _, link := range item.Link {
 			if link.Rel == "alternate" {
-				post = link.Href + "\n"
+				post = post + link.Href + "\n"
 			}
 		}
 		if item.Content != nil {
