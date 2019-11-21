@@ -2,8 +2,8 @@
 
 This plugin allows a user to subscribe a channel to an RSS (Version 2 only) or an Atom Feed.
 
-Version 0.1.0 requires Mattermost 5.10
-Version < 0.1.0 requires Mattermost 5.6
+- Version 0.1.0+ requires Mattermost 5.10
+- Version < 0.1.0 requires Mattermost 5.6
 
 ## Getting Started
 Upload tar.gz to Mattermost using the plugin screen.
