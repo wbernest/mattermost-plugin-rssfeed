@@ -157,7 +157,7 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 		}
 
 		if config.ShowRSSLink {
-			post = post + trimWhitespace(item.Link) + "\n"
+			post = post + strings.TrimSpace(item.Link) + "\n"
 		}
 		if config.ShowDescription {
 			post = post + html2md.Convert(item.Description) + "\n"
@@ -209,7 +209,7 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 		if config.ShowAtomLink {
 			for _, link := range item.Link {
 				if link.Rel == "alternate" {
-					post = post + trimWhitespace(link.Href) + "\n"
+					post = post + strings.TrimSpace(link.Href) + "\n"
 				}
 			}
 		}
@@ -246,7 +246,7 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 func tryParseRichNode(node *atom.Text, post *string) bool {
 	if node != nil {
 		if node.Type != "text" {
-			*post = *post + html2md.Convert(node.Body) + "\n"
+			*post = *post + html2md.Convert(strings.TrimSpace(node.Body)) + "\n"
 		} else {
 			*post = *post + node.Body + "\n"
 		}
@@ -254,14 +254,6 @@ func tryParseRichNode(node *atom.Text, post *string) bool {
 	} else {
 		return false
 	}
-}
-
-func trimWhitespace(text string) string {
-	text = strings.TrimPrefix(text, "\n")
-	text = strings.TrimSuffix(text, "\n")
-	text = strings.TrimSpace(text)
-
-	return text
 }
 
 func (p *RSSFeedPlugin) createBotPost(channelID string, message string, postType string) error {
