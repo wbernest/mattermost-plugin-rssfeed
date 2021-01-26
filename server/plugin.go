@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"golang.org/x/tools/blog/atom"
 )
 
 //const RSSFEED_ICON_URL = "./plugins/rssfeed/assets/rss.png"
@@ -140,10 +141,19 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 	items := rssv2parser.CompareItemsBetweenOldAndNew(oldRssFeed, newRssFeed)
 
 	for _, item := range items {
-		post := newRssFeed.Channel.Title + "\n" + item.Title + "\n" + item.Link + "\n"
+		post := newRssFeed.Channel.Title + "\n"
+
+		if config.ShowRSSItemTitle {
+			post = post + item.Title + "\n"
+		}
+
+		if config.ShowRSSLink {
+			post = post + item.Link + "\n"
+		}
 		if config.ShowDescription {
 			post = post + html2md.Convert(item.Description) + "\n"
 		}
+
 		p.createBotPost(subscription.ChannelID, post, "custom_git_pr")
 	}
 
@@ -156,6 +166,8 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 }
 
 func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) error {
+	config := p.getConfiguration()
+
 	// get new rss feed string from url
 	newFeed, newFeedString, err := atomparser.ParseURL(subscription.URL)
 	if err != nil {
@@ -171,25 +183,38 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 	items := atomparser.CompareItemsBetweenOldAndNew(oldFeed, newFeed)
 
 	for _, item := range items {
-		post := newFeed.Title + "\n" + item.Title + "\n"
+		post := newFeed.Title + "\n"
 
-		for _, link := range item.Link {
-			if link.Rel == "alternate" {
-				post = post + link.Href + "\n"
+		if config.ShowAtomItemTitle {
+			post = post + item.Title + "\n"
+		}
+
+		if config.ShowAtomLink {
+			for _, link := range item.Link {
+				if link.Rel == "alternate" {
+					post = post + link.Href + "\n"
+				}
 			}
 		}
-		if item.Content != nil {
-			if item.Content.Type != "text" {
-				post = post + html2md.Convert(item.Content.Body) + "\n"
-			} else {
-				post = post + item.Content.Body + "\n"
+
+		if config.ShowSummary {
+			if !tryParseRichNode(item.Summary, &post) {
+				p.API.LogInfo("Missing summary in atom feed item",
+					"subscription_url", subscription.URL,
+					"item_title", item.Title)
+				post = post + "\n"
 			}
-		} else {
-			p.API.LogInfo("Missing content in atom feed item",
-				"subscription_url", subscription.URL,
-				"item_title", item.Title)
-			post = post + "\n"
 		}
+
+		if config.ShowContent {
+			if !tryParseRichNode(item.Content, &post) {
+				p.API.LogInfo("Missing content in atom feed item",
+					"subscription_url", subscription.URL,
+					"item_title", item.Title)
+				post = post + "\n"
+			}
+		}
+
 		p.createBotPost(subscription.ChannelID, post, "custom_git_pr")
 	}
 
@@ -199,6 +224,19 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 	}
 
 	return nil
+}
+
+func tryParseRichNode(node *atom.Text, post *string) bool {
+	if node != nil {
+		if node.Type != "text" {
+			*post = *post + html2md.Convert(node.Body) + "\n"
+		} else {
+			*post = *post + node.Body + "\n"
+		}
+		return true
+	} else {
+		return false
+	}
 }
 
 func (p *RSSFeedPlugin) createBotPost(channelID string, message string, postType string) error {
