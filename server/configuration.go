@@ -26,6 +26,7 @@ type configuration struct {
 	ShowAtomLink      bool
 	ShowRSSItemTitle  bool
 	ShowAtomItemTitle bool
+	FormatTitle				bool
 }
 
 // Clone shallow copies the configuration. Your implementation may require a deep copy if

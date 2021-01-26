@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"golang.org/x/tools/blog/atom"
@@ -141,14 +142,22 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 	items := rssv2parser.CompareItemsBetweenOldAndNew(oldRssFeed, newRssFeed)
 
 	for _, item := range items {
-		post := newRssFeed.Channel.Title + "\n"
+		post := ""
+
+		if config.FormatTitle {
+			post = post + "##### "
+		}
+		post = post + newRssFeed.Channel.Title + "\n"
 
 		if config.ShowRSSItemTitle {
+			if config.FormatTitle {
+				post = post + "###### "
+			}
 			post = post + item.Title + "\n"
 		}
 
 		if config.ShowRSSLink {
-			post = post + item.Link + "\n"
+			post = post + trimWhitespace(item.Link) + "\n"
 		}
 		if config.ShowDescription {
 			post = post + html2md.Convert(item.Description) + "\n"
@@ -183,16 +192,24 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 	items := atomparser.CompareItemsBetweenOldAndNew(oldFeed, newFeed)
 
 	for _, item := range items {
-		post := newFeed.Title + "\n"
+		post := ""
+
+		if config.FormatTitle {
+			post = post + "##### "
+		}
+		post = post + newFeed.Title + "\n"
 
 		if config.ShowAtomItemTitle {
+			if config.FormatTitle {
+				post = post + "###### "
+			}
 			post = post + item.Title + "\n"
 		}
 
 		if config.ShowAtomLink {
 			for _, link := range item.Link {
 				if link.Rel == "alternate" {
-					post = post + link.Href + "\n"
+					post = post + trimWhitespace(link.Href) + "\n"
 				}
 			}
 		}
@@ -237,6 +254,14 @@ func tryParseRichNode(node *atom.Text, post *string) bool {
 	} else {
 		return false
 	}
+}
+
+func trimWhitespace(text string) string {
+	text = strings.TrimPrefix(text, "\n")
+	text = strings.TrimSuffix(text, "\n")
+	text = strings.TrimSpace(text)
+
+	return text
 }
 
 func (p *RSSFeedPlugin) createBotPost(channelID string, message string, postType string) error {
