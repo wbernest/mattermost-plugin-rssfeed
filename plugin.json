@@ -72,8 +72,6 @@
                 "type": "bool",
                 "help_text": "(Optional) Specify, whether the title of an Atom feed should be posted",
                 "default": true
-                "help_text": "(Optional) Use this field to hide the description in RSS post (Useful if link already returns a valid link back to post)."
-
             }
         ]
     }
