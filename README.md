@@ -17,8 +17,10 @@ To allow for the plugin to override user user name and icon on posts you must en
 To use the plugin, navigate to the channel you want subscribed and use the following commands:
 ```
 /feed help                  // to see the help menu
-/feed subscribe <url>       // to subscribe the channel to an rss feed
-/feed unsubscribe <url>     // to unsubscribe the channel from an rss feed
+/feed subscribe <url>       // to subscribe the channel to an RSS feed
+/feed sub <url>             // to subscribe the channel to an RSS feed
+/feed unsubscribe <url>     // to unsubscribe the channel from an RSS feed
+/feed unsub <url>           // to unsubscribe the channel from an RSS feed
 /feed list                  // to list the feeds the channel is subscribed to
 ```
 
