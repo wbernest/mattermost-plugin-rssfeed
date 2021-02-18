@@ -6,7 +6,7 @@ This plugin allows a user to subscribe a channel to an RSS (Version 2 only) or a
 - Version < 0.1.0 requires Mattermost 5.6
 
 ## Getting Started
-Upload tar.gz to Mattermost using the plugin screen.
+Upload `tar.gz` to Mattermost using the plugin screen.
 Assign a user under the settings for posting.
 
 To allow for the plugin to override user user name and icon on posts you must enable the feature in your Mattermost system settings:
