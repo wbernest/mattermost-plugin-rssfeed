@@ -6,7 +6,7 @@ This plugin allows a user to subscribe a channel to an RSS (Version 2 only) or a
 - Version < 0.1.0 requires Mattermost 5.6
 
 ## Getting Started
-Upload tar.gz to Mattermost using the plugin screen.
+Upload `tar.gz` to Mattermost using the plugin screen.
 Assign a user under the settings for posting.
 
 To allow for the plugin to override user user name and icon on posts you must enable the feature in your Mattermost system settings:
@@ -17,8 +17,10 @@ To allow for the plugin to override user user name and icon on posts you must en
 To use the plugin, navigate to the channel you want subscribed and use the following commands:
 ```
 /feed help                  // to see the help menu
-/feed subscribe <url>       // to subscribe the channel to an rss feed
-/feed unsubscribe <url>     // to unsubscribe the channel from an rss feed
+/feed subscribe <url>       // to subscribe the channel to an RSS feed
+/feed sub <url>             // to subscribe the channel to an RSS feed
+/feed unsubscribe <url>     // to unsubscribe the channel from an RSS feed
+/feed unsub <url>           // to unsubscribe the channel from an RSS feed
 /feed list                  // to list the feeds the channel is subscribed to
 ```
 

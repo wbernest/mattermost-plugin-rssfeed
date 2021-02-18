@@ -10,11 +10,11 @@ import (
 )
 
 // COMMAND_HELP is the text you see when you type /feed help
-const COMMAND_HELP = `* |/feed subscribe url| - Connect your Mattermost channel to an rss feed 
- * |/feed list| - Lists the rss feeds you have subscribed to
- * |/feed unsubscribe url| - Unsubscribes the Mattermost channel from the rss feed`
+const COMMAND_HELP = `* |/feed subscribe url| or |/feed sub url| - Connect your Mattermost channel to an RSS feed 
+* |/feed list| - Lists the RSS feeds you have subscribed to
+* |/feed unsubscribe url| or |/feed unsub url| - Unsubscribes the Mattermost channel from the RSS feed`
 
-// + `* |/feed initiate| - initiates the rss feed subscription poller`
+// + `* |/feed initiate| - initiates the RSS feed subscription poller`
 
 func getCommand() *model.Command {
 	return &model.Command{
@@ -22,7 +22,7 @@ func getCommand() *model.Command {
 		DisplayName:      "RSSFeed",
 		Description:      "Allows user to subscribe to an rss feed.",
 		AutoComplete:     true,
-		AutoCompleteDesc: "Available commands: list, subscribe, unsubscribe, help",
+		AutoCompleteDesc: "Available commands: list, subscribe, sub, unsubscribe, unsub, help",
 		AutoCompleteHint: "[command]",
 	}
 }
@@ -69,7 +69,7 @@ func (p *RSSFeedPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArg
 			}
 		}
 		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, txt), nil
-	case "subscribe":
+	case "subscribe", "sub":
 
 		if len(parameters) == 0 {
 			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Please specify a url."), nil
@@ -84,7 +84,7 @@ func (p *RSSFeedPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArg
 		}
 
 		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, fmt.Sprintf("Successfully subscribed to %s.", url)), nil
-	case "unsubscribe":
+	case "unsubscribe", "unsub":
 		if len(parameters) == 0 {
 			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Please specify a url."), nil
 		} else if len(parameters) > 1 {

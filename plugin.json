@@ -1,7 +1,7 @@
 {
     "id": "rssfeed",
     "name": "RSSFeed",
-    "description": "This plugin serves as an rss subscription service for Mattermost.",
+    "description": "This plugin serves as an RSS subscription service for Mattermost.",
     "version": "0.2.0",
     "server": {
         "executables": {
@@ -16,7 +16,7 @@
         "settings": [
             {
                 "key": "Heartbeat",
-                "display_name": "Time window between rss feed checks (minutes).",
+                "display_name": "Time window between RSS feed checks (minutes).",
                 "type": "text",
                 "help_text": "This is used to set a timer for the system to know when to go check to see if there is any new data in the subscribed rss feeds.  Defaults to 15 minutes."
             },            
@@ -72,6 +72,8 @@
                 "type": "bool",
                 "help_text": "(Optional) Specify, whether the title of an Atom feed should be posted",
                 "default": true
+                "help_text": "(Optional) Use this field to hide the description in RSS post (Useful if link already returns a valid link back to post)."
+
             }
         ]
     }
