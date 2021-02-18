@@ -2,16 +2,18 @@ package main
 
 import (
 	"errors"
-	"github.com/lunny/html2md"
-	"github.com/mattermost/mattermost-server/model"
-	"github.com/mattermost/mattermost-server/plugin"
-	"github.com/wbernest/atom-parser"
-	"github.com/wbernest/rss-v2-parser"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/lunny/html2md"
+	"github.com/mattermost/mattermost-server/model"
+	"github.com/mattermost/mattermost-server/plugin"
+	atomparser "github.com/wbernest/atom-parser"
+	rssv2parser "github.com/wbernest/rss-v2-parser"
 )
 
 //const RSSFEED_ICON_URL = "./plugins/rssfeed/assets/rss.png"
@@ -116,7 +118,7 @@ func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
 			return errors.New("invalid atom feed format - " + err.Error())
 		}
 	} else {
-		return errors.New("invalid feed format")
+		return fmt.Errorf("invalid feed format for subscription: %s", subscription.URL)
 	}
 
 	return nil
@@ -138,6 +140,12 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 	}
 
 	items := rssv2parser.CompareItemsBetweenOldAndNew(oldRssFeed, newRssFeed)
+
+	// if this is a new subscription only post the latest
+	// and not spam the channel
+	if len(oldRssFeed.Channel.ItemList) == 0 {
+		items = items[:1]
+	}
 
 	for _, item := range items {
 		post := newRssFeed.Channel.Title + "\n" + item.Title + "\n" + item.Link + "\n"
@@ -169,6 +177,12 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 	}
 
 	items := atomparser.CompareItemsBetweenOldAndNew(oldFeed, newFeed)
+
+	// if this is a new subscription only post the latest
+	// and not spam the channel
+	if len(oldFeed.Entry) == 0 {
+		items = items[:1]
+	}
 
 	for _, item := range items {
 		post := newFeed.Title + "\n" + item.Title + "\n"
