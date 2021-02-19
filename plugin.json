@@ -28,49 +28,49 @@
             },            
             {
                 "key": "ShowDescription",
-                "display_name": "Show Description in RSS post.",
+                "display_name": "Show Description in RSS post",
                 "type": "bool",
                 "help_text": "(Optional) Use this field to hide the description in rss post (Useful if link already returns a valid link back to post)."
             },
             {
                 "key": "ShowSummary",
-                "display_name": "Show Summary in Atom post.",
+                "display_name": "Show Summary in Atom post",
                 "type": "bool",
                 "help_text": "(Optional) Use this field to hide the summary in Atom post (Useful if link already returns a valid link back to post)."
             },
             {
                 "key": "ShowContent",
-                "display_name": "Show Content in Atom post.",
+                "display_name": "Show Content in Atom post",
                 "type": "bool",
-                "help_text": "(Optional) Specify, whether the content of an Atom feed should be posted",
+                "help_text": "(Optional) Specify, whether the content of an Atom feed should be posted.",
                 "default": true
             },
             {
                 "key": "ShowRSSLink",
-                "display_name": "Show Link in RSS post.",
+                "display_name": "Show Link in RSS post",
                 "type": "bool",
-                "help_text": "(Optional) Specify, whether the link of an RSS feed should be posted",
+                "help_text": "(Optional) Specify, whether the link of an RSS feed should be posted.",
                 "default": true
             },
             {
                 "key": "ShowAtomLink",
-                "display_name": "Show Link in Atom post.",
+                "display_name": "Show Link in Atom post",
                 "type": "bool",
-                "help_text": "(Optional) Specify, whether the Link of an Atom feed should be posted",
+                "help_text": "(Optional) Specify, whether the Link of an Atom feed should be posted.",
                 "default": true
             },
             {
                 "key": "ShowRSSItemTitle",
-                "display_name": "Show Title in RSS post.",
+                "display_name": "Show Title in RSS post",
                 "type": "bool",
-                "help_text": "(Optional) Specify, whether the title of an RSS feed should be posted",
+                "help_text": "(Optional) Specify, whether the title of an RSS feed should be posted.",
                 "default": true
             },
             {
                 "key": "ShowAtomItemTitle",
-                "display_name": "Show Title in Atom post.",
+                "display_name": "Show Title in Atom post",
                 "type": "bool",
-                "help_text": "(Optional) Specify, whether the title of an Atom feed should be posted",
+                "help_text": "(Optional) Specify, whether the title of an Atom feed should be posted.",
                 "default": true
             }
         ]
