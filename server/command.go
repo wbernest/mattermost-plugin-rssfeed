@@ -14,13 +14,11 @@ const COMMAND_HELP = `* |/feed subscribe url| or |/feed sub url| - Connect your 
 * |/feed list| - Lists the RSS feeds you have subscribed to
 * |/feed unsubscribe url| or |/feed unsub url| - Unsubscribes the Mattermost channel from the RSS feed`
 
-// + `* |/feed initiate| - initiates the RSS feed subscription poller`
-
 func getCommand() *model.Command {
 	return &model.Command{
 		Trigger:          "feed",
 		DisplayName:      "RSSFeed",
-		Description:      "Allows user to subscribe to an rss feed.",
+		Description:      "Allows user to subscribe to an RSS feed.",
 		AutoComplete:     true,
 		AutoCompleteDesc: "Available commands: list, subscribe, sub, unsubscribe, unsub, help",
 		AutoCompleteHint: "[command]",
