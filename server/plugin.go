@@ -10,12 +10,12 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/tools/blog/atom"
 	"github.com/lunny/html2md"
-	"github.com/mattermost/mattermost-server/model"
-	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/plugin"
 	atomparser "github.com/wbernest/atom-parser"
 	rssv2parser "github.com/wbernest/rss-v2-parser"
+	"golang.org/x/tools/blog/atom"
 )
 
 //const RSSFEED_ICON_URL = "./plugins/rssfeed/assets/rss.png"
