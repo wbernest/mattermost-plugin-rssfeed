@@ -10,12 +10,12 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/tools/blog/atom"
 	"github.com/lunny/html2md"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
 	atomparser "github.com/wbernest/atom-parser"
 	rssv2parser "github.com/wbernest/rss-v2-parser"
+	"golang.org/x/tools/blog/atom"
 )
 
 //const RSSFEED_ICON_URL = "./plugins/rssfeed/assets/rss.png"
@@ -145,7 +145,7 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 
 	// if this is a new subscription only post the latest
 	// and not spam the channel
-	if len(oldRssFeed.Channel.ItemList) == 0 {
+	if len(oldRssFeed.Channel.ItemList) == 0 && len(items) > 0 {
 		items = items[:1]
 	}
 
@@ -201,7 +201,7 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 
 	// if this is a new subscription only post the latest
 	// and not spam the channel
-	if len(oldFeed.Entry) == 0 {
+	if len(oldFeed.Entry) == 0 && len(items) > 0 {
 		items = items[:1]
 	}
 
