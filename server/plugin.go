@@ -111,13 +111,13 @@ func (p *RSSFeedPlugin) processSubscription(subscription *Subscription) error {
 	if rssv2parser.IsValidFeed(subscription.URL) {
 		err := p.processRSSV2Subscription(subscription)
 		if err != nil {
-			return errors.New("invalid RSS v2 feed format - " + err.Error())
+			return fmt.Errorf("invalid RSS v2 feed format for %s - %s", subscription.URL, err.Error())
 		}
 
 	} else if atomparser.IsValidFeed(subscription.URL) {
 		err := p.processAtomSubscription(subscription)
 		if err != nil {
-			return errors.New("invalid atom feed format - " + err.Error())
+			return fmt.Errorf("invalid atom feed format for %s - %s", subscription.URL, err.Error())
 		}
 	} else {
 		return fmt.Errorf("invalid feed format for subscription: %s", subscription.URL)
@@ -145,7 +145,7 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 
 	// if this is a new subscription only post the latest
 	// and not spam the channel
-	if len(oldRssFeed.Channel.ItemList) == 0 {
+	if len(oldRssFeed.Channel.ItemList) == 0 && len(items) > 0 {
 		items = items[:1]
 	}
 
@@ -201,7 +201,7 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 
 	// if this is a new subscription only post the latest
 	// and not spam the channel
-	if len(oldFeed.Entry) == 0 {
+	if len(oldFeed.Entry) == 0 && len(items) > 0 {
 		items = items[:1]
 	}
 
