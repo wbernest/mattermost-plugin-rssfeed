@@ -2,10 +2,11 @@
     "id": "rssfeed",
     "name": "RSSFeed",
     "description": "This plugin serves as an RSS subscription service for Mattermost.",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "server": {
         "executables": {
             "linux-amd64": "server/dist/plugin-linux-amd64",
+            "freebsd-amd64": "server/dist/plugin-freebsd-amd64",
             "darwin-amd64": "server/dist/plugin-darwin-amd64",
             "windows-amd64": "server/dist/plugin-windows-amd64.exe"
         }
