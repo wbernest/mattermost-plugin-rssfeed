@@ -40,7 +40,7 @@ func (p *RSSFeedPlugin) ensureBotExists() (string, *model.AppError) {
 		Description: "Allows users to subscribe to RSS feeds.",
 	})
 	if createErr != nil {
-		p.API.LogError("Failed to create "+botDisplayName+". Attempting to find existing one.", "err", createErr)
+		p.API.LogDebug(botDisplayName + " not created. Attempting to find existing one.")
 
 		// Unable to create the bot, so it should already exist
 		user, err := p.API.GetUserByUsername(botName)
