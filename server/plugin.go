@@ -145,7 +145,7 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 
 	// if this is a new subscription only post the latest
 	// and not spam the channel
-	if len(oldRssFeed.Channel.ItemList) == 0 {
+	if len(oldRssFeed.Channel.ItemList) == 0 && len(items) > 0 {
 		items = items[:1]
 	}
 
@@ -201,7 +201,7 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 
 	// if this is a new subscription only post the latest
 	// and not spam the channel
-	if len(oldFeed.Entry) == 0 {
+	if len(oldFeed.Entry) == 0 && len(items) > 0 {
 		items = items[:1]
 	}
 
