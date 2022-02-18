@@ -165,7 +165,8 @@ func (p *RSSFeedPlugin) processRSSV2Subscription(subscription *Subscription) err
 		}
 
 		if config.ShowRSSLink {
-			post = post + strings.TrimSpace(item.Link) + "\n"
+			var link = strings.TrimSpace(item.Link)
+			post = post + "[" + link + "]" + "(<" + link + ">)" + "\n"
 		}
 		if config.ShowDescription {
 			post = post + html2md.Convert(item.Description) + "\n"
@@ -223,7 +224,8 @@ func (p *RSSFeedPlugin) processAtomSubscription(subscription *Subscription) erro
 		if config.ShowAtomLink {
 			for _, link := range item.Link {
 				if link.Rel == "alternate" {
-					post = post + strings.TrimSpace(link.Href) + "\n"
+					var link = strings.TrimSpace(link.Href)
+					post = post + "[" + link + "]" + "(<" + link + ">)" + "\n"
 				}
 			}
 		}
