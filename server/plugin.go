@@ -82,6 +82,11 @@ func (p *RSSFeedPlugin) processHeartBeat() error {
 		err := p.processSubscription(value)
 		if err != nil {
 			p.API.LogError(err.Error())
+			p.API.LogInfo(fmt.Sprintf("Unsubscribing invalid URL %s from channel %s", value.URL, value.ChannelID))
+			err := p.unsubscribe(value.ChannelID, value.URL)
+			if err != nil {
+				p.API.LogError(err.Error())
+			}
 		}
 	}
 
